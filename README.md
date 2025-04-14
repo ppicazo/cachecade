@@ -28,7 +28,7 @@ Initialize the cache at the start of your application:
 
 ```python
 from flask import Flask
-from cachecade import init_cache, replit_cached
+from cachecade import init_cache, cachecaded
 
 app = Flask(__name__)
 
@@ -36,7 +36,7 @@ app = Flask(__name__)
 init_cache()
 
 @app.route('/data')
-@replit_cached(ttl=60)  # Cache results for 60 seconds
+@cachecaded(ttl=60)  # Cache results for 60 seconds
 def get_data():
     # Your expensive data retrieval operation here
     return {"result": "some data"}
@@ -63,7 +63,7 @@ Adding a prefix to your cache keys helps with namespacing and prevents collision
 init_cache(prefix="myapp")
 
 @app.route('/user/<user_id>')
-@replit_cached(ttl=300)  # Cache for 5 minutes
+@cachecaded(ttl=300)  # Cache for 5 minutes
 def get_user(user_id):
     # The actual cache key will include the "myapp:" prefix
     return {"user_id": user_id, "name": "Example User"}
@@ -75,7 +75,7 @@ Cachecade works seamlessly with Flask blueprints:
 
 ```python
 from flask import Flask, Blueprint
-from cachecade import init_cache, replit_cached
+from cachecade import init_cache, cachecaded
 
 app = Flask(__name__)
 # Initialize cache with a prefix for this specific app
@@ -85,13 +85,13 @@ init_cache(prefix="myservice")
 api = Blueprint('api', __name__, url_prefix='/api')
 
 @api.route('/users')
-@replit_cached(ttl=120)  # Cache for 2 minutes
+@cachecaded(ttl=120)  # Cache for 2 minutes
 def get_users():
     # This function's results will be cached
     return {"users": ["Alice", "Bob", "Charlie"]}
 
 @api.route('/products')
-@replit_cached(ttl=300)  # Cache for 5 minutes
+@cachecaded(ttl=300)  # Cache for 5 minutes
 def get_products():
     # This function's results will also be cached
     return {"products": ["Product A", "Product B"]}
@@ -142,19 +142,19 @@ def create_app():
 #### Users Blueprint (`myapp/blueprints/users.py`)
 ```python
 from flask import Blueprint, jsonify
-from cachecade import replit_cached
+from cachecade import cachecaded
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 
 @users_bp.route('/')
-@replit_cached(ttl=300)  # Cache for 5 minutes
+@cachecaded(ttl=300)  # Cache for 5 minutes
 def get_users():
     # Expensive database query simulation
     users = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]
     return jsonify(users)
 
 @users_bp.route('/<int:user_id>')
-@replit_cached(ttl=180)  # Cache for 3 minutes
+@cachecaded(ttl=180)  # Cache for 3 minutes
 def get_user(user_id):
     # The prefix is applied from the init_cache() call in the main app
     return jsonify({"id": user_id, "name": f"User {user_id}"})
@@ -163,12 +163,12 @@ def get_user(user_id):
 #### Products Blueprint (`myapp/blueprints/products.py`)
 ```python
 from flask import Blueprint, jsonify
-from cachecade import replit_cached
+from cachecade import cachecaded
 
 products_bp = Blueprint('products', __name__, url_prefix='/products')
 
 @products_bp.route('/')
-@replit_cached(ttl=600)  # Cache for 10 minutes
+@cachecaded(ttl=600)  # Cache for 10 minutes
 def get_products():
     # Expensive database query simulation
     products = [{"id": 1, "name": "Product A"}, {"id": 2, "name": "Product B"}]
@@ -189,14 +189,14 @@ In this structure:
 1. The cache is initialized once in the application factory
 2. The cache prefix is defined globally for the entire application
 3. Each blueprint is in its own file, but they all use the same cache instance
-4. The `replit_cached` decorator works seamlessly across all blueprints
+4. The `cachecaded` decorator works seamlessly across all blueprints
 
 ### Advanced Example with Environment Configuration
 
 ```python
 import os
 from flask import Flask
-from cachecade import init_cache, replit_cached
+from cachecade import init_cache, cachecaded
 
 app = Flask(__name__)
 
@@ -209,7 +209,7 @@ else:
     init_cache(storage_engines=['memory'], prefix="dev")
 
 @app.route('/data')
-@replit_cached(ttl=60)
+@cachecaded(ttl=60)
 def get_data():
     return {"status": "success"}
 ```

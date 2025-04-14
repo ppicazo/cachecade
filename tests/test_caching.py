@@ -230,13 +230,13 @@ class TestCaching(unittest.TestCase):
                     cachecade.caching.init_cache(storage_engines=['redis', 'replit', 'memory'])
                     self.assertEqual(cachecade.caching.cache_backend, 'memory')
 
-    def test_replit_cached_decorator(self):
-        """Test the replit_cached decorator functionality"""
-        from cachecade import replit_cached
+    def test_cachecaded_decorator(self):
+        """Test the cachecaded decorator functionality"""
+        from cachecade import cachecaded
         from flask import jsonify
         
         # Create a test function using the decorator
-        @replit_cached(ttl=10)
+        @cachecaded(ttl=10)
         def test_function(a, b, c=None):
             return {'result': a + b, 'c': c}
         
@@ -268,14 +268,14 @@ class TestCaching(unittest.TestCase):
 
     def test_cache_expiration_in_memory(self):
         """Test that cached entries expire after their TTL period in memory"""
-        from cachecade import replit_cached
+        from cachecade import cachecaded
         from flask import jsonify
         
         # Set a very short TTL for testing (1 second)
         SHORT_TTL = 1
         
         # Create a test function using the decorator with short TTL
-        @replit_cached(ttl=SHORT_TTL)
+        @cachecaded(ttl=SHORT_TTL)
         def test_function(a, b):
             # This counter helps us verify the function was called again after expiration
             test_function.calls += 1

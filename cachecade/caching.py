@@ -119,7 +119,7 @@ def set_cache_entry(key, value, ttl=None):
     elif cache_backend == 'memory':
         memory_store[key] = value
 
-def replit_cached(ttl=60):
+def cachecaded(ttl=60):
     """
     Decorator to cache function results using the active backend (Redis, Replit DB, or in-memory).
     
