@@ -316,5 +316,87 @@ class TestCaching(unittest.TestCase):
             # Restore original jsonify
             cachecade.caching.jsonify = original_jsonify
 
+    def test_clear_cache(self):
+        """Test cache clearing functionality"""
+        from cachecade import clear_cache, cachecaded
+        
+        # Create test function with caching
+        @cachecaded(ttl=300, return_json=False)
+        def test_func(x):
+            return {'value': x, 'timestamp': time.time()}
+        
+        # Call function to populate cache
+        result1 = test_func(1)
+        result2 = test_func(2)
+        
+        # Verify cache has entries (check memory store directly)
+        self.assertTrue(len(cachecade.caching.memory_store) > 0)
+        
+        # Clear all cache
+        clear_cache()
+        
+        # Verify cache is empty
+        self.assertEqual(len(cachecade.caching.memory_store), 0)
+
+    def test_invalidate_cache_key(self):
+        """Test cache key invalidation functionality"""
+        from cachecade import invalidate_cache_key, cachecaded
+        
+        # Create test function with caching
+        @cachecaded(ttl=300, return_json=False)
+        def test_func(x, y=None):
+            return {'value': x + (y or 0), 'timestamp': time.time()}
+        
+        # Call function to populate cache
+        result1 = test_func(5, y=10)
+        initial_cache_size = len(cachecade.caching.memory_store)
+        self.assertTrue(initial_cache_size > 0)
+        
+        # Invalidate specific cache key
+        success = invalidate_cache_key('test_func', (5,), {'y': 10})
+        self.assertTrue(success)
+        
+        # Verify cache size decreased
+        self.assertEqual(len(cachecade.caching.memory_store), initial_cache_size - 1)
+
+    def test_return_json_parameter(self):
+        """Test the return_json parameter in cachecaded decorator"""
+        from cachecade import cachecaded
+        
+        # Test with return_json=False
+        @cachecaded(ttl=60, return_json=False)
+        def test_func_raw(x):
+            return {'value': x}
+        
+        # Test with return_json=True (default)
+        @cachecaded(ttl=60, return_json=True) 
+        def test_func_json(x):
+            return {'value': x}
+        
+        # Mock jsonify to track calls
+        original_jsonify = cachecade.caching.jsonify
+        jsonify_calls = []
+        def mock_jsonify(data):
+            jsonify_calls.append(data)
+            return data
+        cachecade.caching.jsonify = mock_jsonify
+        
+        try:
+            # Test return_json=False - should not call jsonify
+            jsonify_calls.clear()
+            result_raw = test_func_raw(42)
+            self.assertEqual(result_raw, {'value': 42})
+            self.assertEqual(len(jsonify_calls), 0)  # jsonify should not be called
+            
+            # Test return_json=True - should call jsonify
+            jsonify_calls.clear()
+            result_json = test_func_json(42)
+            self.assertEqual(result_json, {'value': 42})
+            self.assertEqual(len(jsonify_calls), 1)  # jsonify should be called once
+            
+        finally:
+            # Restore original jsonify
+            cachecade.caching.jsonify = original_jsonify
+
 if __name__ == '__main__':
     unittest.main()

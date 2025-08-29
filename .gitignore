@@ -130,3 +130,6 @@ dmypy.json
 .vscode/
 *.swp
 *.swo
+
+# Demo and temporary files
+demo_improvements.py
